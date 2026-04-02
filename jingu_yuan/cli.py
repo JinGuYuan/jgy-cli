@@ -28,7 +28,7 @@ def load_menu():
 
 
 @click.group(context_settings=dict(help_option_names=['-h', '--help']))
-@click.version_option(version="0.1.2")
+@click.version_option(version="0.1.3")
 def cli():
     """🥟 金谷园饺子馆 - 命令行查询工具
     
@@ -183,24 +183,9 @@ def recommend(type: str, people: int):
 
 @cli.command()
 def game():
-    """启动等位小游戏 - 合成大饺子"""
-    game_file = GAME_DIR / "dumpling-game.html"
-    
-    if not game_file.exists():
-        console.print("[red]❌ 游戏文件未找到[/red]")
-        return
-    
-    console.print(Panel.fit(
-        "[bold cyan]🎮 合成大饺子[/bold cyan]\n\n"
-        "相同饺子碰撞 → 合成更高级口味！\n"
-        "点击屏幕投放饺子，别让饺子超过红线！\n\n"
-        "[green]正在启动浏览器...[/green]",
-        title="🥟 等位小游戏",
-        border_style="yellow"
-    ))
-    
-    # 用浏览器打开游戏
-    webbrowser.open(f"file://{game_file.absolute()}")
+    """启动等位小游戏 - 合成大饺子（终端版）"""
+    from .terminal_game import main as game_main
+    game_main()
 
 
 @cli.command()

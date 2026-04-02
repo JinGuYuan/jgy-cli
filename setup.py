@@ -69,7 +69,7 @@ class CustomInstall(install):
 
 setup(
     name="jgy",
-    version="0.1.2",
+    version="0.1.3",
     description="金谷园饺子馆 - 命令行查询工具",
     author="金谷园",
     packages=find_packages(),
