@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>合成大饺子</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+        body {
+            background: #2C1810;
+            font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            display: flex; flex-direction: column; align-items: center;
+            touch-action: none;
+        }
+        .game-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 420px; }
+        .header {
+            width: 100%; padding: 8px 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(135deg, #C62828, #B71C1C);
+            color: #FFF; z-index: 10;
+        }
+        .game-name { font-size: 18px; font-weight: bold; }
+        .header-right { display: flex; align-items: center; gap: 12px; }
+        .score-box { text-align: center; }
+        .score-label { font-size: 10px; opacity: 0.7; }
+        .score-val { font-size: 24px; font-weight: bold; font-variant-numeric: tabular-nums; }
+        .next-box { text-align: center; }
+        .next-label { font-size: 10px; opacity: 0.7; }
+        .next-circle {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            display: flex; align-items: center; justify-content: center;
+            margin-top: 2px; transition: background 0.2s;
+        }
+        .next-text { color: #FFF; font-size: 10px; font-weight: bold; }
+        canvas { display: block; }
+        .chain-bar {
+            width: 100%; padding: 6px 4px;
+            background: #3E2723;
+            display: flex; align-items: center; justify-content: center; gap: 1px;
+        }
+        .ci { display: flex; flex-direction: column; align-items: center; }
+        .cd { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.15); }
+        .ca { color: #555; font-size: 8px; margin: 0 1px; line-height: 20px; }
+        .cn { font-size: 7px; color: #777; margin-top: 1px; }
+        .overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.75); z-index: 999;
+            justify-content: center; align-items: center;
+        }
+        .overlay.show { display: flex; }
+        .modal {
+            background: #FFF; border-radius: 24px; padding: 30px;
+            text-align: center; width: 280px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        .modal h2 { color: #C62828; font-size: 22px; margin-bottom: 4px; }
+        .modal .big-emoji { font-size: 56px; margin: 8px 0; }
+        .modal .fl { font-size: 13px; color: #999; }
+        .modal .fs { font-size: 48px; font-weight: bold; color: #E65100; margin: 4px 0 8px; }
+        .modal .bi { font-size: 14px; color: #666; margin-bottom: 20px; }
+        .btn {
+            background: linear-gradient(135deg, #C62828, #B71C1C);
+            color: #FFF; border: none; padding: 14px 48px;
+            font-size: 17px; font-weight: bold; border-radius: 28px; cursor: pointer;
+        }
+        .btn:active { transform: scale(0.96); }
+        .start {
+            position: fixed; inset: 0;
+            background: linear-gradient(180deg, #C62828 0%, #B71C1C 40%, #891515 100%);
+            z-index: 1000; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; color: #FFF;
+        }
+        .start.hide { display: none; }
+        .start .se { font-size: 80px; margin-bottom: 16px; }
+        .start .st { font-size: 32px; font-weight: bold; margin-bottom: 6px; }
+        .start .ss { font-size: 14px; opacity: 0.7; margin-bottom: 32px; }
+        .start .btn-go {
+            background: #FFD600; color: #B71C1C; border: none;
+            padding: 16px 56px; font-size: 20px; font-weight: bold;
+            border-radius: 30px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .start .btn-go:active { transform: scale(0.96); }
+        .start .sh { margin-top: 20px; font-size: 12px; opacity: 0.4; }
+        .start .rules {
+            margin-top: 24px; font-size: 13px; opacity: 0.6;
+            line-height: 1.8; text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="start" id="startScreen">
+        <div class="se">🥟</div>
+        <div class="st">合成大饺子</div>
+        <div class="ss">相同饺子碰撞 → 合成更高级口味！</div>
+        <button class="btn-go" id="btnStart">开始游戏</button>
+        <div class="rules">🎯 点击屏幕投放饺子<br>🔄 相同饺子碰撞自动合成<br>⚠️ 别让饺子超过红线！</div>
+        <div class="sh">饺子馆 · 等位专属小游戏</div>
+    </div>
+
+    <div class="game-wrap" id="gameWrap">
+        <div class="header">
+            <div class="game-name">🥟 合成大饺子</div>
+            <div class="header-right">
+                <div class="score-box">
+                    <div class="score-label">分数</div>
+                    <div class="score-val" id="scoreVal">0</div>
+                </div>
+                <div class="next-box">
+                    <div class="next-label">下一个</div>
+                    <div class="next-circle" id="nextCircle"><span class="next-text" id="nextText"></span></div>
+                </div>
+            </div>
+        </div>
+        <canvas id="cv"></canvas>
+        <div class="chain-bar" id="chainBar"></div>
+    </div>
+
+    <div class="overlay" id="overGameOver">
+        <div class="modal">
+            <h2>游戏结束</h2>
+            <div class="big-emoji">🥟</div>
+            <div class="fl">最终得分</div>
+            <div class="fs" id="finalScore">0</div>
+            <div class="bi" id="bestInfo">最高合成：素什锦</div>
+            <button class="btn" id="btnRestart">再来一局</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="overCelebrate">
+        <div class="modal">
+            <h2>🎉 恭喜！</h2>
+            <div class="big-emoji">👑</div>
+            <div class="fs" style="color:#F9A825">饺子王！</div>
+            <div class="bi">你合成了传说中的饺子王！</div>
+            <button class="btn" onclick="document.getElementById('overCelebrate').classList.remove('show')">继续游戏</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
+    <script>
+    (function(){
+    'use strict';
+    if (typeof Matter === 'undefined') {
+        document.body.innerHTML = '<div style="text-align:center;padding:60px;color:#FFF;font-size:16px;">游戏加载失败，请刷新页面重试</div>';
+        return;
+    }
+
+    // ====== DUMPLING TYPES (from the menu!) ======
+    const T = [
+        { name: '素什锦',    s: '素锦', c: '#7CB342', r: 15 },
+        { name: '西红柿蛋',  s: '番蛋', c: '#FF5722', r: 21 },
+        { name: '猪肉白菜',  s: '白菜', c: '#C0CA33', r: 27 },
+        { name: '猪肉韭菜',  s: '韭菜', c: '#43A047', r: 33 },
+        { name: '猪肉香菇',  s: '香菇', c: '#6D4C41', r: 40 },
+        { name: '三鲜',      s: '三鲜', c: '#FF9800', r: 47 },
+        { name: '香辣牛肉',  s: '牛肉', c: '#E53935', r: 55 },
+        { name: '孜然羊肉',  s: '羊肉', c: '#AD1457', r: 63 },
+        { name: '青瓜鲜虾',  s: '鲜虾', c: '#00897B', r: 72 },
+        { name: '饺子王',    s: '饺王', c: '#F9A825', r: 82 },
+    ];
+    const MAX_DROP = 4;
+    const DANGER_Y = 85;
+
+    // ====== MATTER.JS ======
+    const { Engine, Bodies, Body, Composite, Events } = Matter;
+    const engine = Engine.create({ gravity: { x: 0, y: 1.8 } });
+    const world = engine.world;
+
+    // ====== CANVAS ======
+    const cv = document.getElementById('cv');
+    const ctx = cv.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+
+    let W = Math.min(window.innerWidth, 420);
+    let H = Math.min(window.innerHeight - 110, 620);
+
+    function setupCanvas() {
+        W = Math.min(window.innerWidth, 420);
+        H = Math.min(window.innerHeight - 110, 620);
+        cv.style.width = W + 'px';
+        cv.style.height = H + 'px';
+        cv.width = W * dpr;
+        cv.height = H * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    setupCanvas();
+
+    // Walls
+    function makeWalls() {
+        const t = 40;
+        return [
+            Bodies.rectangle(W / 2, H + t / 2, W + t * 2, t, { isStatic: true, friction: 0.3, label: 'wall' }),
+            Bodies.rectangle(-t / 2, H / 2, t, H * 2, { isStatic: true, friction: 0.1, label: 'wall' }),
+            Bodies.rectangle(W + t / 2, H / 2, t, H * 2, { isStatic: true, friction: 0.1, label: 'wall' }),
+        ];
+    }
+    let walls = makeWalls();
+    Composite.add(world, walls);
+
+    // ====== STATE ======
+    let score = 0, gameOver = false, highLevel = 0;
+    let curLv = rndLv(), nxtLv = rndLv();
+    let dropX = W / 2, canDrop = true;
+    let bodies = [], effects = [], mergeQ = [];
+    let dangerTime = 0;
+    let celebratedKing = false;
+
+    function rndLv() { return Math.floor(Math.random() * (MAX_DROP + 1)); }
+
+    // ====== CREATE DUMPLING ======
+    function makeDump(lv, x, y) {
+        const d = T[lv];
+        const b = Bodies.circle(x, y, d.r, {
+            restitution: 0.15, friction: 0.4, frictionAir: 0.015,
+            density: 0.002, label: 'dump',
+        });
+        b.lv = lv;
+        b.mg = false;
+        b.born = Date.now();
+        Composite.add(world, b);
+        bodies.push(b);
+        return b;
+    }
+
+    // ====== DROP ======
+    function drop() {
+        if (!canDrop || gameOver) return;
+        canDrop = false;
+        const r = T[curLv].r;
+        const x = Math.max(r + 4, Math.min(W - r - 4, dropX));
+        makeDump(curLv, x, DANGER_Y - 15);
+        curLv = nxtLv;
+        nxtLv = rndLv();
+        updNext();
+        setTimeout(() => { canDrop = true; }, 550);
+    }
+
+    // ====== MERGE ======
+    Events.on(engine, 'collisionStart', (e) => {
+        for (const p of e.pairs) {
+            const a = p.bodyA, b = p.bodyB;
+            if (a.label === 'dump' && b.label === 'dump' &&
+                a.lv === b.lv && a.lv < T.length - 1 && !a.mg && !b.mg) {
+                a.mg = true; b.mg = true;
+                mergeQ.push({
+                    a, b, lv: a.lv + 1,
+                    x: (a.position.x + b.position.x) / 2,
+                    y: (a.position.y + b.position.y) / 2,
+                });
+            }
+        }
+    });
+
+    function procMerge() {
+        for (const m of mergeQ) {
+            Composite.remove(world, m.a);
+            Composite.remove(world, m.b);
+            bodies = bodies.filter(b => b !== m.a && b !== m.b);
+
+            const nb = makeDump(m.lv, m.x, m.y);
+            Body.setVelocity(nb, { x: 0, y: -2.5 });
+
+            const pts = m.lv * (m.lv + 1);
+            score += pts;
+            if (m.lv > highLevel) highLevel = m.lv;
+
+            effects.push({ type: 'merge', x: m.x, y: m.y, lv: m.lv, pts, t0: Date.now() });
+
+            if (m.lv === T.length - 1 && !celebratedKing) {
+                celebratedKing = true;
+                setTimeout(() => {
+                    document.getElementById('overCelebrate').classList.add('show');
+                }, 300);
+            }
+        }
+        mergeQ = [];
+    }
+
+    // ====== GAME OVER ======
+    function checkOver() {
+        if (gameOver) return;
+        let above = false;
+        const now = Date.now();
+        for (const b of bodies) {
+            if (now - b.born < 1200) continue;
+            if (b.position.y - T[b.lv].r < DANGER_Y) { above = true; break; }
+        }
+        if (above) {
+            dangerTime += 16.67;
+            if (dangerTime > 2000) endGame();
+        } else {
+            dangerTime = 0;
+        }
+    }
+
+    function endGame() {
+        gameOver = true;
+        document.getElementById('finalScore').textContent = score;
+        document.getElementById('bestInfo').textContent = '最高合成：' + T[highLevel].name;
+        document.getElementById('overGameOver').classList.add('show');
+    }
+
+    function restart() {
+        bodies.forEach(b => Composite.remove(world, b));
+        bodies = []; mergeQ = []; effects = [];
+        score = 0; highLevel = 0; gameOver = false;
+        dangerTime = 0; canDrop = true; celebratedKing = false;
+        curLv = rndLv(); nxtLv = rndLv();
+        document.getElementById('scoreVal').textContent = '0';
+        document.getElementById('overGameOver').classList.remove('show');
+        updNext();
+        requestAnimationFrame(loop);
+    }
+
+    // ====== DRAW ======
+    function draw() {
+        ctx.clearRect(0, 0, W, H);
+
+        // Background
+        const bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#FFFDE7'); bg.addColorStop(1, '#FFF8E1');
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+        // Subtle grid
+        ctx.strokeStyle = 'rgba(0,0,0,0.03)'; ctx.lineWidth = 1;
+        for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+        for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+
+        // Danger line
+        ctx.setLineDash([8, 6]);
+        const da = dangerTime > 0 ? (0.5 + 0.5 * Math.sin(Date.now() / 100)) : 0.25;
+        ctx.strokeStyle = `rgba(211,47,47,${da})`; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(0, DANGER_Y); ctx.lineTo(W, DANGER_Y); ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Danger zone
+        if (dangerTime > 0) {
+            ctx.fillStyle = `rgba(211,47,47,${0.05 + 0.05 * Math.sin(Date.now() / 100)})`;
+            ctx.fillRect(0, 0, W, DANGER_Y);
+        }
+
+        // Drop guide
+        if (canDrop && !gameOver) {
+            ctx.setLineDash([3, 7]);
+            ctx.strokeStyle = 'rgba(0,0,0,0.07)'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(dropX, DANGER_Y); ctx.lineTo(dropX, H); ctx.stroke();
+            ctx.setLineDash([]);
+            drawDump(dropX, DANGER_Y - 18, curLv, 0.5);
+        }
+
+        // Dumplings
+        for (const b of bodies) drawDump(b.position.x, b.position.y, b.lv, 1, b.angle);
+
+        // Effects
+        drawFx();
+
+        document.getElementById('scoreVal').textContent = score;
+    }
+
+    function drawDump(x, y, lv, a, ang) {
+        const d = T[lv];
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.translate(x, y);
+        if (ang) ctx.rotate(ang);
+
+        // Shadow
+        ctx.beginPath(); ctx.arc(2, 3, d.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0,0,0,0.1)'; ctx.fill();
+
+        // Body gradient
+        const g = ctx.createRadialGradient(-d.r * 0.25, -d.r * 0.3, 0, 0, 0, d.r);
+        g.addColorStop(0, ltn(d.c, 45)); g.addColorStop(0.7, d.c); g.addColorStop(1, dkn(d.c, 15));
+        ctx.beginPath(); ctx.arc(0, 0, d.r, 0, Math.PI * 2);
+        ctx.fillStyle = g; ctx.fill();
+        ctx.strokeStyle = dkn(d.c, 30); ctx.lineWidth = 1.5; ctx.stroke();
+
+        // Highlight
+        ctx.beginPath(); ctx.arc(-d.r * 0.2, -d.r * 0.25, d.r * 0.35, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.28)'; ctx.fill();
+
+        // Dumpling pleats (crescent marks on top)
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 1;
+        const pleats = Math.max(3, Math.floor(d.r / 8));
+        for (let i = 0; i < pleats; i++) {
+            const angle = -Math.PI * 0.7 + (Math.PI * 1.4 / (pleats - 1)) * i;
+            const px = Math.cos(angle) * d.r * 0.55;
+            const py = Math.sin(angle) * d.r * 0.55 - d.r * 0.15;
+            ctx.beginPath();
+            ctx.arc(px, py, d.r * 0.12, 0, Math.PI);
+            ctx.stroke();
+        }
+
+        // King glow
+        if (lv === T.length - 1) {
+            ctx.beginPath(); ctx.arc(0, 0, d.r + 5, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(249,168,37,${0.3 + 0.3 * Math.sin(Date.now() / 250)})`;
+            ctx.lineWidth = 4; ctx.stroke();
+        }
+
+        // Text
+        const fs = Math.max(9, Math.min(d.r * 0.48, 22));
+        ctx.font = `bold ${fs}px "PingFang SC","Microsoft YaHei",sans-serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillText(d.s, 1, 1);
+        ctx.fillStyle = '#FFF'; ctx.fillText(d.s, 0, 0);
+
+        ctx.restore();
+    }
+
+    function drawFx() {
+        const now = Date.now();
+        effects = effects.filter(e => {
+            const el = now - e.t0;
+            if (el > 900) return false;
+            const p = el / 900;
+
+            // Ring
+            ctx.beginPath(); ctx.arc(e.x, e.y, T[e.lv].r * (1 + p * 0.8), 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(255,215,0,${1 - p})`; ctx.lineWidth = 3 * (1 - p); ctx.stroke();
+
+            // Score float
+            ctx.save();
+            ctx.font = `bold ${14 + p * 8}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillStyle = `rgba(230,81,0,${1 - p})`;
+            ctx.fillText('+' + e.pts, e.x, e.y - 20 - p * 45);
+            ctx.restore();
+
+            // Particles
+            for (let i = 0; i < 8; i++) {
+                const a = (Math.PI * 2 / 8) * i + p * 1.5;
+                const dist = T[e.lv].r * p * 1.8;
+                ctx.beginPath();
+                ctx.arc(e.x + Math.cos(a) * dist, e.y + Math.sin(a) * dist, 3 * (1 - p), 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,200,0,${1 - p})`; ctx.fill();
+            }
+            return true;
+        });
+    }
+
+    // ====== COLOR HELPERS ======
+    function ltn(hex, pct) {
+        const n = parseInt(hex.slice(1), 16);
+        const r = Math.min(255, (n >> 16) + Math.round(2.55 * pct));
+        const g = Math.min(255, ((n >> 8) & 0xFF) + Math.round(2.55 * pct));
+        const b = Math.min(255, (n & 0xFF) + Math.round(2.55 * pct));
+        return `rgb(${r},${g},${b})`;
+    }
+    function dkn(hex, pct) {
+        const n = parseInt(hex.slice(1), 16);
+        const r = Math.max(0, (n >> 16) - Math.round(2.55 * pct));
+        const g = Math.max(0, ((n >> 8) & 0xFF) - Math.round(2.55 * pct));
+        const b = Math.max(0, (n & 0xFF) - Math.round(2.55 * pct));
+        return `rgb(${r},${g},${b})`;
+    }
+
+    // ====== INPUT ======
+    cv.addEventListener('touchstart', e => {
+        e.preventDefault();
+        const rect = cv.getBoundingClientRect();
+        dropX = e.touches[0].clientX - rect.left;
+    }, { passive: false });
+    cv.addEventListener('touchmove', e => {
+        e.preventDefault();
+        const rect = cv.getBoundingClientRect();
+        dropX = e.touches[0].clientX - rect.left;
+    }, { passive: false });
+    cv.addEventListener('touchend', e => { e.preventDefault(); drop(); }, { passive: false });
+    cv.addEventListener('mousemove', e => {
+        const rect = cv.getBoundingClientRect();
+        dropX = e.clientX - rect.left;
+    });
+    cv.addEventListener('click', () => drop());
+    cv.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('touchmove', e => { if (e.target === cv) e.preventDefault(); }, { passive: false });
+
+    // ====== UI ======
+    function updNext() {
+        const d = T[nxtLv];
+        document.getElementById('nextCircle').style.background = d.c;
+        document.getElementById('nextText').textContent = d.s;
+    }
+
+    function buildChain() {
+        const bar = document.getElementById('chainBar');
+        let h = '';
+        for (let i = 0; i < T.length; i++) {
+            if (i > 0) h += '<span class="ca">→</span>';
+            h += `<div class="ci"><div class="cd" style="background:${T[i].c}"></div><div class="cn">${T[i].s}</div></div>`;
+        }
+        bar.innerHTML = h;
+    }
+
+    // ====== GAME LOOP ======
+    function loop(ts) {
+        if (gameOver) return;
+        Engine.update(engine, 1000 / 60);
+        procMerge();
+        draw();
+        checkOver();
+        requestAnimationFrame(loop);
+    }
+
+    // ====== INIT ======
+    buildChain();
+    updNext();
+
+    document.getElementById('btnStart').addEventListener('click', () => {
+        document.getElementById('startScreen').classList.add('hide');
+        requestAnimationFrame(loop);
+    });
+    document.getElementById('btnRestart').addEventListener('click', restart);
+
+    })();
+    </script>
+</body>
+</html>

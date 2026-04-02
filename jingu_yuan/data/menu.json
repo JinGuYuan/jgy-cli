@@ -1,0 +1,80 @@
+{
+  "restaurant": {
+    "name": "金谷园饺子馆",
+    "slogan": "鲜·香·美",
+    "hours": "10:00 - 22:00",
+    "address": "北京市（具体地址请查询地图）",
+    "phone": "010-xxxx-xxxx"
+  },
+  "categories": [
+    {
+      "name": "鲜",
+      "items": [
+        {"id": "00", "name": "鲅鱼", "price": 15, "unit": "两", "tags": ["招牌", "海鲜"]},
+        {"id": "50", "name": "青瓜鲜虾", "price": 18, "unit": "两", "tags": ["招牌", "海鲜", "清爽"]},
+        {"id": "55", "name": "猪肉韭菜虾仁", "price": 15, "unit": "两", "tags": ["招牌", "鲜"]},
+        {"id": "39", "name": "鸡蛋韭菜虾仁", "price": 13, "unit": "两", "tags": ["招牌", "鲜"]}
+      ]
+    },
+    {
+      "name": "猪",
+      "items": [
+        {"id": "01", "name": "猪肉三鲜", "price": 15, "unit": "两", "tags": ["经典"]},
+        {"id": "06", "name": "猪肉韭菜", "price": 15, "unit": "两", "tags": ["经典"]},
+        {"id": "03", "name": "四喜", "price": 15, "unit": "两", "tags": ["特色"]},
+        {"id": "04", "name": "猪肉玉米粒", "price": 15, "unit": "两", "tags": ["甜香"]},
+        {"id": "05", "name": "猪肉莲藕", "price": 15, "unit": "两", "tags": ["脆爽"]},
+        {"id": "08", "name": "猪肉大葱", "price": 15, "unit": "两", "tags": ["经典"]},
+        {"id": "02", "name": "猪肉香菇", "price": 15, "unit": "两", "tags": ["招牌", "香"]},
+        {"id": "07", "name": "猪肉茴香", "price": 15, "unit": "两", "tags": ["特色"]},
+        {"id": "09", "name": "猪肉芹菜", "price": 15, "unit": "两", "tags": []},
+        {"id": "10", "name": "猪肉酸菜", "price": 15, "unit": "两", "tags": ["东北风味"]},
+        {"id": "62", "name": "三鲜2.0", "price": 15, "unit": "两", "tags": ["升级版"]},
+        {"id": "60", "name": "酱肉扁豆", "price": 15, "unit": "两", "tags": []},
+        {"id": "64", "name": "猪肉马蹄玉米", "price": 15, "unit": "两", "tags": ["招牌", "甜脆"]},
+        {"id": "65", "name": "猪肉豆腐虾仁", "price": 15, "unit": "两", "tags": []},
+        {"id": "18", "name": "猪肉白菜", "price": 15, "unit": "两", "tags": ["经典"]},
+        {"id": "12", "name": "猪肉扁豆", "price": 15, "unit": "两", "tags": []}
+      ]
+    },
+    {
+      "name": "牛",
+      "items": [
+        {"id": "25", "name": "香辣牛肉", "price": 16, "unit": "两", "tags": ["招牌", "辣"]},
+        {"id": "26", "name": "咖喱牛肉", "price": 16, "unit": "两", "tags": ["特色"]},
+        {"id": "27", "name": "牛肉白萝卜", "price": 16, "unit": "两", "tags": []},
+        {"id": "28", "name": "牛肉胡萝卜", "price": 16, "unit": "两", "tags": []},
+        {"id": "29", "name": "牛肉西红柿", "price": 16, "unit": "两", "tags": []},
+        {"id": "30", "name": "牛肉大葱", "price": 16, "unit": "两", "tags": []}
+      ]
+    },
+    {
+      "name": "羊",
+      "items": [
+        {"id": "35", "name": "孜然羊肉", "price": 16, "unit": "两", "tags": ["招牌", "香"]},
+        {"id": "32", "name": "羊肉胡萝卜", "price": 16, "unit": "两", "tags": []},
+        {"id": "33", "name": "羊肉酸菜", "price": 16, "unit": "两", "tags": []},
+        {"id": "36", "name": "羊肉大葱", "price": 16, "unit": "两", "tags": []}
+      ]
+    },
+    {
+      "name": "素",
+      "items": [
+        {"id": "37", "name": "西红柿鸡蛋", "price": 12, "unit": "两", "tags": ["经典"]},
+        {"id": "38", "name": "香甜玉米粒", "price": 12, "unit": "两", "tags": ["甜"]},
+        {"id": "49", "name": "鸡蛋西葫芦", "price": 12, "unit": "两", "tags": []},
+        {"id": "48", "name": "木须虾仁", "price": 12, "unit": "两", "tags": []},
+        {"id": "43", "name": "鸡蛋韭菜", "price": 12, "unit": "两", "tags": ["经典"]},
+        {"id": "44", "name": "鸡蛋茴香", "price": 12, "unit": "两", "tags": []},
+        {"id": "40", "name": "素什锦", "price": 12, "unit": "两", "tags": ["招牌", "健康"]}
+      ]
+    }
+  ],
+  "recommendations": {
+    "first_time": ["青瓜鲜虾", "猪肉香菇", "香辣牛肉", "素什锦"],
+    "seafood_lover": ["青瓜鲜虾", "鲅鱼", "猪肉韭菜虾仁", "鸡蛋韭菜虾仁"],
+    "spicy": ["香辣牛肉"],
+    "light": ["青瓜鲜虾", "西红柿鸡蛋", "素什锦", "香甜玉米粒"],
+    "meat_lover": ["猪肉三鲜", "孜然羊肉", "香辣牛肉", "猪肉香菇"]
+  }
+}
