@@ -95,11 +95,18 @@ detect_china_network() {
 install_jgy() {
     print_info "正在安装 jgy..."
     
+    # 检测是否需要 --break-system-packages (PEP 668)
+    PIP_EXTRA_ARGS=""
+    if $PIP_CMD install --help 2>/dev/null | grep -q "break-system-packages"; then
+        PIP_EXTRA_ARGS="--break-system-packages"
+        print_info "检测到系统保护，使用兼容模式安装"
+    fi
+    
     if [ "$IN_CHINA" = true ]; then
         # 使用国内镜像源
-        $PIP_CMD install jgy -i https://pypi.tuna.tsinghua.edu.cn/simple --user
+        $PIP_CMD install jgy -i https://pypi.tuna.tsinghua.edu.cn/simple --user $PIP_EXTRA_ARGS
     else
-        $PIP_CMD install jgy --user
+        $PIP_CMD install jgy --user $PIP_EXTRA_ARGS
     fi
     
     print_success "jgy 安装完成！"
